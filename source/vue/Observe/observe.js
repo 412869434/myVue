@@ -3,6 +3,7 @@ import {
     arrayMethods,
     observeArray
 } from "./array"
+import Dep from "./dep"
 
 class Observe {
     constructor(data) { //data就是vue里面定义的data vm._data
@@ -29,9 +30,15 @@ class Observe {
 export function defineReactive(data,key,value) {
     //贯彻value是不是一个对象,如果是一个对象，递归监听
     oberse(value)
+    let dep = new Dep()
     Object.defineProperty(data,key,{
         get() {
-            console.log('获取数据');
+            //console.log('获取数据');
+            if(Dep.target) {
+                // 在watcher里面记录dep 也要在dep里面记录watcher
+                dep.depend()
+                //dep.addSub(watcher)
+            }
             return value
         },
         set(newValue) {
@@ -40,6 +47,8 @@ export function defineReactive(data,key,value) {
             // 有可能你设置的时候 也是一个对象
             oberse(newValue)
             value = newValue
+            //当属性设置的时候
+            dep.notify()
         }
     })
 }
